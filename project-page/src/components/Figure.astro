@@ -1,0 +1,34 @@
+---
+import type { FigureBlock } from '../lib/types';
+import { withBase } from '../lib/url';
+import { renderInline } from '../lib/markdown';
+
+interface Props {
+  block: Omit<FigureBlock, 'type'>;
+  /** "Figure 1" etc. */
+  label?: string;
+}
+
+const { block, label } = Astro.props;
+const size = block.size ?? 'wide';
+---
+
+<figure class:list={['figure', `block--${size}`]} data-reveal>
+  <img
+    src={withBase(block.src)}
+    alt={block.alt}
+    width={block.width}
+    height={block.height}
+    loading={block.priority ? 'eager' : 'lazy'}
+    fetchpriority={block.priority ? 'high' : undefined}
+    decoding="async"
+    style={block.maxWidth ? `max-width: ${block.maxWidth}` : undefined}
+  />
+  {
+    block.caption && (
+      <figcaption>
+        {label && <span class="caption__label">{label}.</span>} <Fragment set:html={renderInline(block.caption)} />
+      </figcaption>
+    )
+  }
+</figure>

@@ -1,0 +1,19 @@
+---
+/**
+ * Wrap any custom markup to give it the same scroll-reveal animation:
+ *
+ *   <Reveal><p>Anything</p></Reveal>
+ *   <Reveal as="section" class="my-class">...</Reveal>
+ *
+ * (Blocks rendered from paper.ts already reveal automatically.)
+ */
+interface Props {
+  as?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { as: Tag = 'div', class: className, ...rest } = Astro.props;
+---
+
+<Tag class={className} data-reveal {...rest}><slot /></Tag>

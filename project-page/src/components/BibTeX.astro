@@ -1,0 +1,27 @@
+---
+import Icon from './Icon.astro';
+import PaperSection from './PaperSection.astro';
+
+interface Props {
+  bibtex: string;
+  title?: string;
+}
+
+const { bibtex, title = 'BibTeX' } = Astro.props;
+---
+
+<PaperSection id="bibtex" title={title} class="section--bibtex">
+  <div class="bibtex block--text" data-reveal>
+    <button type="button" class="bibtex__copy" data-copy-target="bibtex-code" aria-describedby="bibtex-status">
+      <span class="bibtex__copy-default"><Icon name="copy" size={14} /> Copy</span>
+      <span class="bibtex__copy-done"><Icon name="check" size={14} /> Copied</span>
+    </button>
+    <pre class="bibtex__pre" tabindex="0" aria-label="BibTeX citation"><code id="bibtex-code">{bibtex.trim()}</code></pre>
+    <span id="bibtex-status" class="visually-hidden" role="status" aria-live="polite"></span>
+  </div>
+</PaperSection>
+
+<script>
+  import { initCopyButtons } from '../scripts/copy';
+  initCopyButtons();
+</script>

@@ -1,0 +1,45 @@
+---
+import type { FigureRowBlock } from '../lib/types';
+import { withBase } from '../lib/url';
+import { renderInline } from '../lib/markdown';
+
+interface Props {
+  block: FigureRowBlock;
+  label?: string;
+}
+
+const { block, label } = Astro.props;
+const size = block.size ?? 'wide';
+const letters = 'abcdefgh';
+---
+
+<figure class:list={['figure', 'figure-row', `block--${size}`]} data-reveal>
+  <div class="figure-row__grid" style={`--cols: ${Math.min(block.items.length, 4)}`}>
+    {
+      block.items.map((item, i) => (
+        <figure class="figure-row__item">
+          <img
+            src={withBase(item.src)}
+            alt={item.alt}
+            width={item.width}
+            height={item.height}
+            loading="lazy"
+            decoding="async"
+          />
+          {item.caption && (
+            <figcaption class="figure-row__sub">
+              ({letters[i]}) <Fragment set:html={renderInline(item.caption)} />
+            </figcaption>
+          )}
+        </figure>
+      ))
+    }
+  </div>
+  {
+    block.caption && (
+      <figcaption>
+        {label && <span class="caption__label">{label}.</span>} <Fragment set:html={renderInline(block.caption)} />
+      </figcaption>
+    )
+  }
+</figure>

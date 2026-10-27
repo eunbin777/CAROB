@@ -1,0 +1,24 @@
+---
+import Block from './Block.astro';
+import type { NumberedBlock } from '../lib/numbering';
+
+interface Props {
+  id: string;
+  title: string;
+  content?: NumberedBlock[];
+  /** Extra class, e.g. "section--abstract". */
+  class?: string;
+}
+
+const { id, title, content = [], class: extra } = Astro.props;
+---
+
+<section id={id} class:list={['section', extra]} aria-labelledby={`${id}-title`}>
+  <div class="container">
+    <h2 id={`${id}-title`} class="section__title" data-reveal>{title}</h2>
+    <div class="section__body">
+      {content.map(({ block, label }) => <Block block={block} label={label} />)}
+      <slot />
+    </div>
+  </div>
+</section>

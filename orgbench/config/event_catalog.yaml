@@ -1,0 +1,61 @@
+# Event type catalog (slim). The LLM portfolio step picks an event_type
+# from these keys; the engine uses `relevant_teams` to sample candidate actors
+# and `typical_duration_days` to bound the event window. Milestones are not
+# drawn from a fixed pool — the scenario LLM writes them fresh for
+# each specific event from its title and summary.
+
+feature_launch:
+  relevant_teams: [T_eng, T_product, T_sales, T_legal, T_exec]
+  typical_duration_days: [20, 45]
+
+design_review:
+  relevant_teams: [T_eng, T_product, T_security]
+  typical_duration_days: [10, 25]
+
+incident_response:
+  relevant_teams: [T_eng, T_security, T_exec]
+  typical_duration_days: [5, 15]
+
+security_audit:
+  relevant_teams: [T_security, T_eng, T_legal]
+  typical_duration_days: [25, 45]
+
+vendor_approval:
+  relevant_teams: [T_finance, T_legal, T_exec]
+  typical_duration_days: [12, 28]
+
+customer_escalation:
+  relevant_teams: [T_cs, T_sales, T_product, T_eng]
+  typical_duration_days: [5, 15]
+
+policy_exception:
+  relevant_teams: [T_legal, T_exec, T_finance]
+  typical_duration_days: [8, 20]
+
+hiring_decision:
+  relevant_teams: [T_exec, T_eng, T_finance]
+  typical_duration_days: [15, 35]
+
+budget_planning:
+  relevant_teams: [T_finance, T_exec, T_product]
+  typical_duration_days: [15, 30]
+
+partnership_negotiation:
+  relevant_teams: [T_exec, T_legal, T_sales, T_product]
+  typical_duration_days: [20, 40]
+
+compliance_review:
+  relevant_teams: [T_legal, T_security, T_finance]
+  typical_duration_days: [15, 30]
+
+product_pricing:
+  relevant_teams: [T_product, T_finance, T_sales, T_cs]
+  typical_duration_days: [12, 25]
+
+data_migration:
+  relevant_teams: [T_eng, T_security, T_product]
+  typical_duration_days: [15, 35]
+
+roadmap_planning:
+  relevant_teams: [T_product, T_eng, T_exec]
+  typical_duration_days: [15, 30]

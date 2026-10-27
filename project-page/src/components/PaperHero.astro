@@ -1,0 +1,106 @@
+---
+import ResourceButtons from './ResourceButtons.astro';
+import type { Paper } from '../lib/types';
+import { renderInline } from '../lib/markdown';
+
+interface Props {
+  paper: Paper;
+}
+
+const { paper } = Astro.props;
+const { authors, affiliations } = paper;
+
+// Superscript numbers only make sense when there is more than one affiliation.
+const showAffNumbers = affiliations.length > 1;
+const affIndex = new Map(affiliations.map((a, i) => [String(a.id), i + 1]));
+
+const supFor = (a: Paper['authors'][number]) => {
+  const parts: string[] = [];
+  if (showAffNumbers && a.affiliationIds?.length) {
+    parts.push(
+      a.affiliationIds
+        .map((id) => affIndex.get(String(id)))
+        .filter(Boolean)
+        .join(',')
+    );
+  }
+  if (a.equalContribution) parts.push('*');
+  if (a.corresponding) parts.push('†');
+  return parts.join('');
+};
+
+const notes: string[] = [];
+if (authors.some((a) => a.equalContribution)) notes.push('<sup>*</sup>Equal contribution');
+if (authors.some((a) => a.corresponding)) notes.push('<sup>†</sup>Corresponding author');
+for (const n of paper.notes ?? []) notes.push(renderInline(n));
+
+const venueAbove = paper.venuePosition === 'above';
+---
+
+<header class="hero">
+  <div class="container hero__inner">
+    {
+      paper.venue && venueAbove && (
+        <p class="hero__venue" data-reveal="hero">
+          {paper.venue}
+        </p>
+      )
+    }
+
+    <h1 class="hero__title" data-reveal="hero">{paper.title}</h1>
+
+    {
+      paper.venue && !venueAbove && (
+        <p class="hero__venue" data-reveal="hero">
+          {paper.venue}
+        </p>
+      )
+    }
+
+    <ul class="hero__authors" aria-label="Authors" data-reveal="hero">
+      {
+        authors.map((a) => {
+          const sup = supFor(a);
+          return (
+            <li class="author">
+              {a.url ? (
+                <a href={a.url} target="_blank" rel="noopener noreferrer">
+                  {a.name}
+                </a>
+              ) : (
+                <span>{a.name}</span>
+              )}
+              {sup && <sup>{sup}</sup>}
+            </li>
+          );
+        })
+      }
+    </ul>
+
+    <div class="hero__meta" data-reveal="hero">
+      {
+        affiliations.length > 0 && (
+          <ul class="hero__affiliations" aria-label="Affiliations">
+            {affiliations.map((aff, i) => (
+              <li>
+                {showAffNumbers && <sup>{i + 1}</sup>}
+                {aff.name}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      {
+        notes.length > 0 && (
+          <ul class="hero__notes">
+            {notes.map((n) => (
+              <li set:html={n} />
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <ResourceButtons links={paper.links} extraLinks={paper.extraLinks} revealIndex={4} />
+  </div>
+</header>

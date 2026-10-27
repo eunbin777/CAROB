@@ -1,0 +1,60 @@
+---
+import Icon from './Icon.astro';
+import type { ExtraLink, IconName, PaperLinks } from '../lib/types';
+import { withBase } from '../lib/url';
+
+interface Props {
+  links: PaperLinks;
+  extraLinks?: ExtraLink[];
+  /** Hero entrance order index. */
+  revealIndex?: number;
+}
+
+const { links, extraLinks = [], revealIndex } = Astro.props;
+
+// Fixed order for the standard buttons; anything empty is skipped.
+const standard: Array<{ key: keyof PaperLinks; label: string; icon: IconName }> = [
+  { key: 'paper', label: 'Paper', icon: 'paper' },
+  { key: 'arxiv', label: 'arXiv', icon: 'arxiv' },
+  { key: 'code', label: 'Code', icon: 'code' },
+  { key: 'demo', label: 'Demo', icon: 'demo' },
+  { key: 'dataset', label: 'Dataset', icon: 'dataset' },
+  { key: 'model', label: 'Model', icon: 'model' },
+];
+
+const buttons = [
+  ...standard
+    .filter((b) => typeof links[b.key] === 'string' && links[b.key]!.trim() !== '')
+    .map((b) => ({ label: b.label, url: links[b.key]!.trim(), icon: b.icon })),
+  ...extraLinks
+    .filter((l) => l && l.url && l.url.trim() !== '')
+    .map((l) => ({ label: l.label, url: l.url.trim(), icon: l.icon ?? ('link' as IconName) })),
+];
+---
+
+{
+  buttons.length > 0 && (
+    <nav
+      class="resources"
+      aria-label="Paper resources"
+      data-reveal={revealIndex !== undefined ? 'hero' : undefined}
+    >
+      <ul class="resources__list">
+        {buttons.map((b) => (
+          <li>
+            <a
+              class="btn"
+              href={withBase(b.url)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${b.label} (opens in a new tab)`}
+            >
+              <Icon name={b.icon} />
+              <span>{b.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

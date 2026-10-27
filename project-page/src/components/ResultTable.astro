@@ -1,0 +1,105 @@
+---
+/**
+ * Booktabs-style result table.
+ *  - header row is always emphasised (bold, rules above/below)
+ *  - rows with `highlight: true` get a soft background (e.g. "Ours")
+ *  - `{ group: '...' }` rows act as small section labels
+ *  - scrolls horizontally on narrow screens
+ */
+import type { TableBlock, TableCell, TableRow } from '../lib/types';
+import { renderInline } from '../lib/markdown';
+
+interface Props {
+  block: TableBlock;
+  label?: string;
+}
+
+const { block, label } = Astro.props;
+const size = block.size ?? 'wide';
+const nCols = block.columns.length;
+
+const align = (i: number) => block.align?.[i] ?? (i === 0 ? 'left' : 'center');
+
+type Normal = { kind: 'row'; cells: TableCell[]; highlight: boolean } | { kind: 'group'; label: string };
+const rows: Normal[] = block.rows.map((r: TableRow) => {
+  if (Array.isArray(r)) return { kind: 'row', cells: r, highlight: false };
+  if ('group' in r) return { kind: 'group', label: r.group };
+  return { kind: 'row', cells: r.cells, highlight: !!r.highlight };
+});
+
+const captionId = `tbl-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<figure class:list={['table-figure', `block--${size}`]} data-reveal>
+  {
+    block.caption && (
+      <figcaption id={captionId}>
+        {label && <span class="caption__label">{label}.</span>} <Fragment set:html={renderInline(block.caption)} />
+      </figcaption>
+    )
+  }
+  <div
+    class="table-scroll"
+    role="region"
+    tabindex="0"
+    aria-labelledby={block.caption ? captionId : undefined}
+    aria-label={block.caption ? undefined : (label ?? 'Results table')}
+  >
+    <table class="result-table">
+      <thead>
+        {
+          block.headerGroups && (
+            <tr class="result-table__groups">
+              {block.headerGroups.map((g) =>
+                g.label ? (
+                  <th scope="colgroup" colspan={g.span}>
+                    <Fragment set:html={renderInline(g.label)} />
+                  </th>
+                ) : (
+                  <td colspan={g.span} />
+                )
+              )}
+            </tr>
+          )
+        }
+        <tr>
+          {
+            block.columns.map((c, i) => (
+              <th scope="col" class={`a-${align(i)}`}>
+                <Fragment set:html={renderInline(c)} />
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) =>
+            r.kind === 'group' ? (
+              <tr class="result-table__group">
+                <th scope="colgroup" colspan={nCols}>
+                  <Fragment set:html={renderInline(r.label)} />
+                </th>
+              </tr>
+            ) : (
+              <tr class:list={{ 'is-highlight': r.highlight }}>
+                {r.cells.map((c, i) =>
+                  i === 0 ? (
+                    <th scope="row" class={`a-${align(i)}`}>
+                      <Fragment set:html={renderInline(c)} />
+                    </th>
+                  ) : (
+                    <td class={`a-${align(i)}`}>
+                      <Fragment set:html={renderInline(c)} />
+                    </td>
+                  )
+                )}
+              </tr>
+            )
+          )
+        }
+      </tbody>
+    </table>
+  </div>
+  {block.note && <p class="table-note" set:html={renderInline(block.note)} />}
+</figure>

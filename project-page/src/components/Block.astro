@@ -1,0 +1,23 @@
+---
+/** Renders one content block of a section, chosen by `block.type`. */
+import Figure from './Figure.astro';
+import FigureRow from './FigureRow.astro';
+import Video from './Video.astro';
+import ResultTable from './ResultTable.astro';
+import type { Block } from '../lib/types';
+import { renderMarkdown } from '../lib/markdown';
+
+interface Props {
+  block: Block;
+  label?: string;
+}
+
+const { block, label } = Astro.props;
+---
+
+{block.type === 'markdown' && <div class="prose" data-reveal set:html={renderMarkdown(block.content)} />}
+{block.type === 'html' && <div class="prose" data-reveal set:html={block.content} />}
+{block.type === 'figure' && <Figure block={block} label={label} />}
+{block.type === 'figures' && <FigureRow block={block} label={label} />}
+{block.type === 'video' && <Video block={block} label={label} />}
+{block.type === 'table' && <ResultTable block={block} label={label} />}

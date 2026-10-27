@@ -1,0 +1,30 @@
+---
+import type { VideoBlock } from '../lib/types';
+import { withBase } from '../lib/url';
+import { renderInline } from '../lib/markdown';
+
+interface Props {
+  block: VideoBlock;
+  label?: string;
+}
+
+const { block, label } = Astro.props;
+const size = block.size ?? 'wide';
+---
+
+<figure class:list={['figure', `block--${size}`]} data-reveal>
+  {
+    block.autoplay ? (
+      <video src={withBase(block.src)} poster={withBase(block.poster)} autoplay muted loop playsinline preload="metadata" />
+    ) : (
+      <video src={withBase(block.src)} poster={withBase(block.poster)} controls playsinline preload="metadata" />
+    )
+  }
+  {
+    block.caption && (
+      <figcaption>
+        {label && <span class="caption__label">{label}.</span>} <Fragment set:html={renderInline(block.caption)} />
+      </figcaption>
+    )
+  }
+</figure>

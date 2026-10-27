@@ -1,0 +1,43 @@
+---
+/**
+ * The page is assembled entirely from src/data/paper.ts.
+ * You should not need to edit this file for a new paper.
+ */
+import PaperLayout from '../layouts/PaperLayout.astro';
+import PaperHero from '../components/PaperHero.astro';
+import PaperSection from '../components/PaperSection.astro';
+import Figure from '../components/Figure.astro';
+import BibTeX from '../components/BibTeX.astro';
+import paper from '../data/paper';
+import { numberSections } from '../lib/numbering';
+import { validatePaper } from '../lib/validate';
+
+validatePaper(paper);
+
+const { teaserLabel, sections } = numberSections(paper);
+---
+
+<PaperLayout paper={paper}>
+  <PaperHero slot="hero" paper={paper} />
+
+  {
+    paper.teaser && (
+      <div class="teaser">
+        <div class="container">
+          <Figure block={paper.teaser} label={teaserLabel} />
+        </div>
+      </div>
+    )
+  }
+
+  <PaperSection
+    id="abstract"
+    title={paper.abstractTitle ?? 'Abstract'}
+    class="section--abstract"
+    content={[{ block: { type: 'markdown', content: paper.abstract } }]}
+  />
+
+  {sections.map((s) => <PaperSection id={s.id} title={s.title} content={s.content} />)}
+
+  {paper.bibtex && paper.bibtex.trim() && <BibTeX bibtex={paper.bibtex} />}
+</PaperLayout>

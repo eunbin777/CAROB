@@ -1,0 +1,56 @@
+/* ==========================================================================
+   Scroll reveal — content rests slightly below, then rises into place.
+
+   Hidden state applies ONLY under html.reveal-on, which is set by a tiny
+   inline script in <head> when JS + IntersectionObserver are available and
+   reduced motion is NOT requested. No JS → everything is visible.
+   ========================================================================== */
+
+:root {
+  --reveal-distance: 18px;
+  --reveal-blur: 3px;
+  --reveal-duration: 650ms;
+  --reveal-ease: cubic-bezier(0.22, 1, 0.36, 1); /* soft ease-out, no overshoot */
+}
+
+@media (max-width: 640px) {
+  :root {
+    --reveal-distance: 12px;
+  }
+}
+
+.reveal-on [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-distance), 0);
+  filter: blur(var(--reveal-blur));
+  transition:
+    opacity var(--reveal-duration) var(--reveal-ease),
+    transform var(--reveal-duration) var(--reveal-ease),
+    filter var(--reveal-duration) var(--reveal-ease);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-on [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Belt and braces: never hide or animate for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+
+/* Printing: always show everything. */
+@media print {
+  .reveal-on [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

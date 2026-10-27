@@ -1,0 +1,103 @@
+---
+import '../styles/global.css';
+import '../styles/paper.css';
+import '../styles/reveal.css';
+import type { Paper } from '../lib/types';
+import { withBase } from '../lib/url';
+import { toPlainText, renderInline } from '../lib/markdown';
+
+interface Props {
+  paper: Paper;
+}
+
+const { paper } = Astro.props;
+
+const pageTitle = paper.shortTitle ? `${paper.shortTitle}: ${paper.title}` : paper.title;
+const description = (() => {
+  const d = paper.meta?.description ?? toPlainText(paper.abstract);
+  return d.length > 160 ? `${d.slice(0, 157).replace(/\s+\S*$/, '')}…` : d;
+})();
+const favicon = withBase(paper.meta?.favicon ?? '/favicon.svg');
+const ogImage = paper.meta?.ogImage
+  ? Astro.site
+    ? new URL(withBase(paper.meta.ogImage), Astro.site).href
+    : withBase(paper.meta.ogImage)
+  : undefined;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const authorNames = paper.authors.map((a) => a.name).join(', ');
+---
+
+<!doctype html>
+<html lang={paper.lang ?? 'en'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={authorNames} />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href={favicon} type="image/svg+xml" />
+
+    <!--
+      Fonts: the same pair ReSCORE / Nerfies-style project pages use —
+      Google Sans (title, venue, authors) + Noto Sans (body). Same request URL as those
+      pages, so the rendering matches. If the request fails, system fonts are used.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans&display=swap" rel="stylesheet" />
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={paper.title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+    <!-- Google Scholar-style citation metadata -->
+    <meta name="citation_title" content={paper.title} />
+    {paper.authors.map((a) => <meta name="citation_author" content={a.name} />)}
+    {paper.year && <meta name="citation_publication_date" content={String(paper.year)} />}
+    {paper.venue && <meta name="citation_conference_title" content={paper.venue} />}
+    {paper.links.paper && <meta name="citation_pdf_url" content={withBase(paper.links.paper)} />}
+
+    <!--
+      Reveal bootstrap (progressive enhancement). Runs before first paint.
+      Only enables the hidden-until-revealed state when animation can actually run.
+    -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        if (!('IntersectionObserver' in window)) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        d.classList.add('reveal-on');
+        // Failsafe: if the reveal script fails to load, never leave content hidden.
+        setTimeout(function () {
+          if (!window.__revealReady) d.classList.remove('reveal-on');
+        }, 2500);
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot name="hero" />
+    <main id="main">
+      <slot />
+    </main>
+    {
+      paper.footer && (
+        <footer class="site-footer">
+          <div class="container">
+            <p set:html={renderInline(paper.footer)} />
+          </div>
+        </footer>
+      )
+    }
+
+    <script>
+      import { initReveal } from '../scripts/reveal';
+      initReveal();
+    </script>
+  </body>
+</html>
